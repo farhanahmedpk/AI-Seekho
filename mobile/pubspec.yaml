@@ -1,0 +1,38 @@
+name: cold_guard
+description: A new Flutter project called ColdGuard.
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^2.4.3
+  http: ^1.1.0
+  dio: ^5.3.3
+  fl_chart: ^0.65.0
+  animated_text_kit: ^4.2.2
+
+  shimmer: ^3.0.0
+  shared_preferences: ^2.2.2
+  flutter_animate: ^4.5.2
+  share_plus: ^12.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/worker_normal.png
+    - assets/images/worker_danger.png
+    - assets/images/worker_resolving.png
+
+dependency_overrides:
+  package_info_plus: 8.1.2
+  share_plus: 7.2.0

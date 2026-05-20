@@ -1,0 +1,18 @@
+{
+  "status": "commited",
+  "type": "backend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:8000",
+  "backendAuthType": "public",
+  "executionArgs": {
+    "projectName": "mobile",
+    "projectPath": "f:\\Project AI\\mobile",
+    "testIds": [],
+    "additionalInstruction": "",
+    "serverMode": "development",
+    "envs": {
+      "API_KEY": "sk-user-Uk2qsHP8rlv4V2KxY357cykQUoE1Ngrg7U9Vxye3XOY8z6jroeqg5fNFFD8nIBYBm8AmuzM06fAwoPo5I0K1j_nqjsfgvf0OKN7zp728ps35noNyq-pAW1fCWvEIArEM8fU"
+    }
+  },
+  "serverPort": 50082
+}

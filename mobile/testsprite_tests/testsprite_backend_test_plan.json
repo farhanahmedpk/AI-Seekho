@@ -1,0 +1,52 @@
+[
+  {
+    "id": "TC001",
+    "title": "get system health status",
+    "description": "Verify that a GET request to / returns a 200 response with the current system health status without requiring authentication."
+  },
+  {
+    "id": "TC002",
+    "title": "get all truck sensor readings",
+    "description": "Verify that a GET request to /sensors returns a 200 response with a list of all truck sensor readings including current temperatures and statuses."
+  },
+  {
+    "id": "TC003",
+    "title": "get all shipments with current status",
+    "description": "Verify that a GET request to /shipments returns a 200 response with all shipment records and their current statuses."
+  },
+  {
+    "id": "TC004",
+    "title": "post trigger breach with valid truck and temperature",
+    "description": "Verify that a POST request to /trigger-breach with a valid truck_id and temperature above threshold returns a 200 response containing the AgentPipelineTrace and updates shipment status and incident data in Firebase."
+  },
+  {
+    "id": "TC005",
+    "title": "post trigger breach with nonexistent truck id",
+    "description": "Verify that a POST request to /trigger-breach with a truck_id that does not exist returns a 404 Truck not found response and does not execute the breach pipeline or change shipment data."
+  },
+  {
+    "id": "TC006",
+    "title": "post trigger breach with database update failure",
+    "description": "Verify that a POST request to /trigger-breach with valid inputs but simulated database update failure returns a 500 Database update failed response and the pipeline trace indicates partial failure."
+  },
+  {
+    "id": "TC007",
+    "title": "post analyze unstructured with valid content",
+    "description": "Verify that a POST request to /analyze-unstructured with content containing a truck identifier and temperature statement returns a 200 UnstructuredAnalysisResult, triggers the breach response pipeline, and updates incident and shipment state."
+  },
+  {
+    "id": "TC008",
+    "title": "post analyze unstructured with malformed content",
+    "description": "Verify that a POST request to /analyze-unstructured with malformed content missing truck_id or temperature returns a 200 UnstructuredAnalysisResult indicating missing or failed extraction and does not trigger or triggers fallback breach response."
+  },
+  {
+    "id": "TC009",
+    "title": "post analyze unstructured with ambiguous or noisy text",
+    "description": "Verify that a POST request to /analyze-unstructured with ambiguous or noisy text returns a 200 result with parsed values if extraction succeeds or indicates inability to identify breach inputs if extraction fails."
+  },
+  {
+    "id": "TC010",
+    "title": "get agent trace stream for valid truck and temperature",
+    "description": "Verify that a GET request to /agent-trace/stream/{truck_id}/{temperature} streams pipeline_started, agent_started, agent_completed events for each agent, and pipeline_completed event with full incident summary for valid inputs."
+  }
+]

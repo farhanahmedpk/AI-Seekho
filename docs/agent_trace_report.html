@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ColdGuard -- Agent Trace Report</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0A0E1A;
+    color: #C8D6E5;
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+    padding: 40px 20px;
+  }
+
+  .container { max-width: 960px; margin: 0 auto; }
+
+  .report-header {
+    text-align: center;
+    padding: 40px 0 30px;
+    border-bottom: 1px solid rgba(0, 255, 255, 0.15);
+    margin-bottom: 40px;
+  }
+
+  .report-header h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #00E5FF;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+
+  .report-header .subtitle {
+    color: #5C6B7A;
+    font-size: 0.95rem;
+  }
+
+  .report-header .data-source {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: #2a1a0a;
+    color: #FBBF24;
+    border: 1px solid #FBBF2433;
+  }
+
+  .input-card {
+    background: linear-gradient(135deg, #0F1629 0%, #141B2D 100%);
+    border: 1px solid rgba(0, 229, 255, 0.1);
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 36px;
+  }
+
+  .input-card h2 {
+    color: #00E5FF;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+
+  .input-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+  }
+
+  .input-item {
+    background: rgba(0, 0, 0, 0.25);
+    padding: 14px 18px;
+    border-radius: 8px;
+    border-left: 3px solid #00E5FF;
+  }
+
+  .input-item .label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #5C6B7A;
+    margin-bottom: 4px;
+  }
+
+  .input-item .value {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #E8F0FE;
+  }
+
+  .input-item .value.danger { color: #FF5252; }
+
+  .agent-card {
+    background: linear-gradient(135deg, #0F1629 0%, #141B2D 100%);
+    border: 1px solid rgba(0, 229, 255, 0.08);
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 24px;
+    position: relative;
+  }
+
+  .agent-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, #00E5FF, #4ADE80);
+    border-radius: 3px 0 0 3px;
+  }
+
+  .agent-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .agent-number {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, #00E5FF22, #00E5FF11);
+    border: 2px solid #00E5FF;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #00E5FF;
+    flex-shrink: 0;
+  }
+
+  .agent-header h3 {
+    color: #E8F0FE;
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+
+  .agent-meta {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-top: 4px;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    background: #0d3320;
+    color: #4ADE80;
+    border: 1px solid #4ADE8033;
+  }
+
+  .duration {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: #5C6B7A;
+  }
+
+  .section { margin-bottom: 18px; }
+  .section h4 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #00E5FF;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .json-block {
+    background: #080B14;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+    padding: 18px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    line-height: 1.7;
+    overflow-x: auto;
+    white-space: pre;
+  }
+
+  .json-key { color: #00E5FF; }
+  .json-str { color: #4ADE80; }
+  .json-num { color: #FBBF24; }
+  .json-bool { color: #A78BFA; font-weight: 600; }
+
+  .reasoning-box {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border: 1px solid rgba(251, 191, 36, 0.15);
+    border-left: 3px solid #FBBF24;
+    border-radius: 8px;
+    padding: 20px;
+  }
+
+  .reasoning-box h4 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #FBBF24;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .reasoning-box p {
+    font-size: 0.88rem;
+    line-height: 1.7;
+    color: #B0BEC5;
+  }
+
+  .summary-card {
+    background: linear-gradient(135deg, #0F1629 0%, #141B2D 100%);
+    border: 1px solid rgba(74, 222, 128, 0.15);
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 24px;
+  }
+
+  .summary-card h2 {
+    color: #4ADE80;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .summary-stat {
+    background: rgba(0,0,0,0.25);
+    padding: 14px 18px;
+    border-radius: 8px;
+    text-align: center;
+  }
+
+  .summary-stat .stat-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #4ADE80;
+  }
+
+  .summary-stat .stat-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #5C6B7A;
+    margin-top: 4px;
+  }
+
+  .action-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    font-size: 0.9rem;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .action-check {
+    color: #4ADE80;
+    font-weight: 700;
+    font-size: 1rem;
+  }
+
+  .flowchart {
+    background: linear-gradient(135deg, #0F1629 0%, #141B2D 100%);
+    border: 1px solid rgba(0, 229, 255, 0.1);
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 24px;
+  }
+
+  .flowchart h2 {
+    color: #00E5FF;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+  }
+
+  .flow-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0;
+  }
+
+  .flow-node {
+    padding: 12px 22px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .flow-node.breach { background: #FF525222; border: 1px solid #FF5252; color: #FF5252; }
+  .flow-node.severity { background: #FBBF2422; border: 1px solid #FBBF24; color: #FBBF24; }
+  .flow-node.action { background: #4ADE8022; border: 1px solid #4ADE80; color: #4ADE80; }
+  .flow-node.resolved { background: #00E5FF22; border: 1px solid #00E5FF; color: #00E5FF; }
+
+  .flow-arrow {
+    color: #5C6B7A;
+    font-size: 1.4rem;
+    padding: 0 10px;
+    user-select: none;
+  }
+
+  .footer {
+    text-align: center;
+    padding: 30px 0;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    margin-top: 30px;
+    color: #3A4556;
+    font-size: 0.8rem;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="report-header">
+    <h1>ColdGuard &mdash; Agent Trace Report</h1>
+    <div class="subtitle">May 15, 2026 at 02:03 PM</div>
+    <div class="data-source">SIMULATED Data</div>
+  </div>
+
+  <div class="input-card">
+    <h2>Breach Input</h2>
+    <div class="input-grid">
+      <div class="input-item">
+        <div class="label">Truck ID</div>
+        <div class="value">TRK-004</div>
+      </div>
+      <div class="input-item">
+        <div class="label">Temperature</div>
+        <div class="value danger">12.5&deg;C</div>
+      </div>
+      <div class="input-item">
+        <div class="label">Threshold</div>
+        <div class="value">8.0&deg;C</div>
+      </div>
+      <div class="input-item">
+        <div class="label">Cargo Type</div>
+        <div class="value">Vaccines</div>
+      </div>
+      <div class="input-item">
+        <div class="label">Driver</div>
+        <div class="value">Tariq Mahmood</div>
+      </div>
+      <div class="input-item">
+        <div class="label">Route</div>
+        <div class="value">Islamabad &rarr; Peshawar</div>
+      </div>
+    </div>
+  </div>
+
+  
+        <div class="agent-card">
+            <div class="agent-header">
+                <div class="agent-number">1</div>
+                <div>
+                    <h3>Assessment Agent</h3>
+                    <div class="agent-meta">
+                        <span class="status-badge">COMPLETED</span>
+                        <span class="duration">2150ms</span>
+                    </div>
+                </div>
+            </div>
+            <div class="section">
+                <h4>Input Received</h4>
+                <pre class="json-block">{
+  <span class="json-key">"truck_id"</span>: <span class="json-str">"TRK-004"</span>,
+  <span class="json-key">"current_temp_celsius"</span>: <span class="json-num">12.5</span>,
+  <span class="json-key">"threshold_temp"</span>: <span class="json-num">8.0</span>,
+  <span class="json-key">"cargo_type"</span>: <span class="json-str">"vaccines"</span>,
+  <span class="json-key">"cargo_description"</span>: <span class="json-str">"Insulin Vials (Novo Nordisk) -- Critical Cold Chain"</span>,
+  <span class="json-key">"value_pkr"</span>: <span class="json-num">24000000</span>
+}</pre>
+            </div>
+            <div class="section">
+                <h4>Output Produced</h4>
+                <pre class="json-block">{
+  <span class="json-key">"breach_confirmed"</span>: <span class="json-bool">true</span>,
+  <span class="json-key">"severity"</span>: <span class="json-str">"Critical"</span>,
+  <span class="json-key">"temp_deviation"</span>: <span class="json-num">4.5</span>,
+  <span class="json-key">"deviation_percentage"</span>: <span class="json-num">56.25</span>,
+  <span class="json-key">"cargo_risk_level"</span>: <span class="json-str">"HIGH"</span>,
+  <span class="json-key">"estimated_financial_exposure_pkr"</span>: <span class="json-num">24000000</span>,
+  <span class="json-key">"time_sensitivity"</span>: <span class="json-str">"IMMEDIATE"</span>,
+  <span class="json-key">"cargo_viability"</span>: <span class="json-str">"At risk -- insulin degrades rapidly above 8C"</span>,
+  <span class="json-key">"recommended_urgency"</span>: <span class="json-str">"EMERGENCY"</span>
+}</pre>
+            </div>
+            <div class="reasoning-box">
+                <h4>Agent Reasoning</h4>
+                <p>Temperature at 12.5C is 4.5C above the 8.0C threshold (56.25% deviation). The cargo is insulin vials which are extremely temperature-sensitive biological products. At this deviation level, protein degradation begins within 15-30 minutes. The financial exposure is PKR 24,000,000. Given the cargo type, deviation magnitude, and financial value, this breach is classified as CRITICAL with IMMEDIATE action required.</p>
+            </div>
+        </div>
+        <div class="agent-card">
+            <div class="agent-header">
+                <div class="agent-number">2</div>
+                <div>
+                    <h3>Decision Agent</h3>
+                    <div class="agent-meta">
+                        <span class="status-badge">COMPLETED</span>
+                        <span class="duration">2380ms</span>
+                    </div>
+                </div>
+            </div>
+            <div class="section">
+                <h4>Input Received</h4>
+                <pre class="json-block">{
+  <span class="json-key">"severity"</span>: <span class="json-str">"Critical"</span>,
+  <span class="json-key">"cargo_risk_level"</span>: <span class="json-str">"HIGH"</span>,
+  <span class="json-key">"estimated_financial_exposure_pkr"</span>: <span class="json-num">24000000</span>,
+  <span class="json-key">"time_sensitivity"</span>: <span class="json-str">"IMMEDIATE"</span>,
+  <span class="json-key">"cargo_viability"</span>: <span class="json-str">"At risk -- insulin degrades rapidly above 8C"</span>
+}</pre>
+            </div>
+            <div class="section">
+                <h4>Output Produced</h4>
+                <pre class="json-block">{
+  <span class="json-key">"primary_action"</span>: <span class="json-str">"QUARANTINE"</span>,
+  <span class="json-key">"secondary_actions"</span>: [
+    "NOTIFY_ALL_STAKEHOLDERS",
+    "DISPATCH_REPLACEMENT",
+    "FILE_INSURANCE_CLAIM"
+  ],
+  <span class="json-key">"reroute_recommended"</span>: <span class="json-bool">false</span>,
+  <span class="json-key">"nearest_cold_storage"</span>: <span class="json-str">"PakCold Facility, GT Road, Attock (47 km)"</span>,
+  <span class="json-key">"replacement_truck_eta"</span>: <span class="json-str">"45 minutes"</span>,
+  <span class="json-key">"insurance_claim_recommended"</span>: <span class="json-bool">true</span>,
+  <span class="json-key">"estimated_claim_value_pkr"</span>: <span class="json-num">24000000</span>
+}</pre>
+            </div>
+            <div class="reasoning-box">
+                <h4>Agent Reasoning</h4>
+                <p>Given CRITICAL severity and HIGH cargo risk for insulin, the cargo cannot be salvaged if temperature exposure continues. QUARANTINE is the only viable option to prevent distribution of compromised medication. Rerouting is not recommended as the cargo integrity is already compromised. A replacement shipment must be dispatched from the origin warehouse immediately. Insurance claim should be filed as the cargo value exceeds PKR 10M threshold.</p>
+            </div>
+        </div>
+        <div class="agent-card">
+            <div class="agent-header">
+                <div class="agent-number">3</div>
+                <div>
+                    <h3>Communication Agent</h3>
+                    <div class="agent-meta">
+                        <span class="status-badge">COMPLETED</span>
+                        <span class="duration">1890ms</span>
+                    </div>
+                </div>
+            </div>
+            <div class="section">
+                <h4>Input Received</h4>
+                <pre class="json-block">{
+  <span class="json-key">"primary_action"</span>: <span class="json-str">"QUARANTINE"</span>,
+  <span class="json-key">"secondary_actions"</span>: [
+    "NOTIFY_ALL_STAKEHOLDERS",
+    "DISPATCH_REPLACEMENT",
+    "FILE_INSURANCE_CLAIM"
+  ],
+  <span class="json-key">"severity"</span>: <span class="json-str">"Critical"</span>,
+  <span class="json-key">"driver_name"</span>: <span class="json-str">"Tariq Mahmood"</span>
+}</pre>
+            </div>
+            <div class="section">
+                <h4>Output Produced</h4>
+                <pre class="json-block">{
+  <span class="json-key">"notifications_drafted"</span>: <span class="json-num">4</span>,
+  <span class="json-key">"driver_sms"</span>: <span class="json-str">"URGENT: Tariq, pull over immediately at nearest safe location. Cargo temperature breach detected on TRK-004. DO NOT deliver. Await further instructions. -- ColdGuard System"</span>,
+  <span class="json-key">"dispatcher_email_subject"</span>: <span class="json-str">"CRITICAL: Temperature Breach -- TRK-004 -- Immediate Action Required"</span>,
+  <span class="json-key">"client_notification"</span>: <span class="json-str">"HealthFirst Distributors: We regret to inform you that shipment SHP-004 (Insulin Vials) has experienced a critical temperature breach during transit. Cargo has been quarantined per safety protocols. A replacement shipment is being arranged. Your ColdGuard insurance claim has been initiated automatically. Reference: INC-20260515-001"</span>,
+  <span class="json-key">"insurance_notification"</span>: <span class="json-str">"Automatic claim filed for Policy #CG-TRK-004-2026. Cargo: Insulin Vials, Value: PKR 24,000,000. Breach details and temperature logs attached."</span>
+}</pre>
+            </div>
+            <div class="reasoning-box">
+                <h4>Agent Reasoning</h4>
+                <p>Four stakeholder groups require immediate notification: (1) Driver -- SMS for immediate action to stop delivery, (2) Dispatcher -- detailed email with breach analysis and required actions, (3) Client -- professional notification with reassurance about replacement and insurance, (4) Insurance provider -- automated claim initiation with cargo details and breach evidence.</p>
+            </div>
+        </div>
+        <div class="agent-card">
+            <div class="agent-header">
+                <div class="agent-number">4</div>
+                <div>
+                    <h3>Action Agent</h3>
+                    <div class="agent-meta">
+                        <span class="status-badge">COMPLETED</span>
+                        <span class="duration">2000ms</span>
+                    </div>
+                </div>
+            </div>
+            <div class="section">
+                <h4>Input Received</h4>
+                <pre class="json-block">{
+  <span class="json-key">"primary_action"</span>: <span class="json-str">"QUARANTINE"</span>,
+  <span class="json-key">"notifications_drafted"</span>: <span class="json-num">4</span>,
+  <span class="json-key">"insurance_claim_recommended"</span>: <span class="json-bool">true</span>,
+  <span class="json-key">"estimated_claim_value_pkr"</span>: <span class="json-num">24000000</span>
+}</pre>
+            </div>
+            <div class="section">
+                <h4>Output Produced</h4>
+                <pre class="json-block">{
+  <span class="json-key">"actions_executed"</span>: [
+    {
+      <span class="json-key">"action"</span>: <span class="json-str">"SHIPMENT_QUARANTINED"</span>,
+      <span class="json-key">"target"</span>: <span class="json-str">"SHP-004"</span>,
+      <span class="json-key">"new_status"</span>: <span class="json-str">"QUARANTINED"</span>,
+      <span class="json-key">"success"</span>: <span class="json-bool">true</span>
+    },
+    {
+      <span class="json-key">"action"</span>: <span class="json-str">"INCIDENT_LOGGED"</span>,
+      <span class="json-key">"incident_id"</span>: <span class="json-str">"INC-20260515-001"</span>,
+      <span class="json-key">"firebase_path"</span>: <span class="json-str">"/incidents/INC-20260515-001"</span>,
+      <span class="json-key">"success"</span>: <span class="json-bool">true</span>
+    },
+    {
+      <span class="json-key">"action"</span>: <span class="json-str">"DRIVER_SMS_SENT"</span>,
+      <span class="json-key">"recipient"</span>: <span class="json-str">"Tariq Mahmood (+92-345-9988776)"</span>,
+      <span class="json-key">"success"</span>: <span class="json-bool">true</span>
+    },
+    {
+      <span class="json-key">"action"</span>: <span class="json-str">"CLIENT_NOTIFIED"</span>,
+      <span class="json-key">"recipient"</span>: <span class="json-str">"HealthFirst Distributors (cold-chain@healthfirst.pk)"</span>,
+      <span class="json-key">"success"</span>: <span class="json-bool">true</span>
+    },
+    {
+      <span class="json-key">"action"</span>: <span class="json-str">"INSURANCE_CLAIM_FILED"</span>,
+      <span class="json-key">"claim_id"</span>: <span class="json-str">"CLM-20260515-004"</span>,
+      <span class="json-key">"value_pkr"</span>: <span class="json-num">24000000</span>,
+      <span class="json-key">"success"</span>: <span class="json-bool">true</span>
+    },
+    {
+      <span class="json-key">"action"</span>: <span class="json-str">"REPLACEMENT_DISPATCHED"</span>,
+      <span class="json-key">"new_truck"</span>: <span class="json-str">"TRK-BACKUP-01"</span>,
+      <span class="json-key">"eta"</span>: <span class="json-str">"45 minutes"</span>,
+      <span class="json-key">"success"</span>: <span class="json-bool">true</span>
+    }
+  ],
+  <span class="json-key">"total_actions"</span>: <span class="json-num">6</span>,
+  <span class="json-key">"all_successful"</span>: <span class="json-bool">true</span>,
+  <span class="json-key">"system_state"</span>: <span class="json-str">"BREACH_RESOLVED"</span>
+}</pre>
+            </div>
+            <div class="reasoning-box">
+                <h4>Agent Reasoning</h4>
+                <p>Executing all decided actions in priority order: (1) Quarantine shipment SHP-004 in Firebase to prevent delivery of compromised cargo, (2) Log full incident with breach details for audit trail, (3) Send urgent SMS to driver Tariq Mahmood to halt delivery, (4) Notify client HealthFirst Distributors with professional communication, (5) File insurance claim for PKR 24M cargo value, (6) Dispatch replacement truck from origin warehouse. All 6 actions executed successfully. System state updated to BREACH_RESOLVED.</p>
+            </div>
+        </div>
+
+  <div class="summary-card">
+    <h2>Pipeline Summary</h2>
+    <div class="summary-grid">
+      <div class="summary-stat">
+        <div class="stat-value">8.4s</div>
+        <div class="stat-label">Total Duration</div>
+      </div>
+      <div class="summary-stat">
+        <div class="stat-value">4/4</div>
+        <div class="stat-label">Agents Completed</div>
+      </div>
+      <div class="summary-stat">
+        <div class="stat-value">6</div>
+        <div class="stat-label">Actions Executed</div>
+      </div>
+      <div class="summary-stat">
+        <div class="stat-value">RESOLVED</div>
+        <div class="stat-label">Final State</div>
+      </div>
+    </div>
+    <h4 style="color:#00E5FF;font-size:0.75rem;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;">Actions Executed</h4>
+    <div class="action-item"><span class="action-check">&#10003;</span> SHIPMENT_QUARANTINED</div><div class="action-item"><span class="action-check">&#10003;</span> INCIDENT_LOGGED</div><div class="action-item"><span class="action-check">&#10003;</span> DRIVER_SMS_SENT</div><div class="action-item"><span class="action-check">&#10003;</span> CLIENT_NOTIFIED</div><div class="action-item"><span class="action-check">&#10003;</span> INSURANCE_CLAIM_FILED</div><div class="action-item"><span class="action-check">&#10003;</span> REPLACEMENT_DISPATCHED</div>
+  </div>
+
+  <div class="flowchart">
+    <h2>Decision Flow</h2>
+    <div class="flow-row">
+      <div class="flow-node breach">Breach Detected<br><small>12.5&deg;C &gt; 8.0&deg;C</small></div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-node severity">Severity: Critical<br><small>+56% deviation</small></div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-node action">Quarantine + Notify<br><small>+ Replace + Insure</small></div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-node resolved">Breach Resolved<br><small>6 actions completed</small></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    ColdGuard &copy; 2026 &mdash; AI Seekho Hackathon &mdash; Generated by generate_trace_report.py
+  </div>
+
+</div>
+</body>
+</html>

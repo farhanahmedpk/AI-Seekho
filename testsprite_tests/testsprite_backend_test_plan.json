@@ -1,0 +1,52 @@
+[
+  {
+    "id": "TC001",
+    "title": "get_system_health_status",
+    "description": "Verify that a GET request to the root endpoint returns a 200 status code with a valid health status indicating the service is online."
+  },
+  {
+    "id": "TC002",
+    "title": "get_all_truck_sensor_readings",
+    "description": "Verify that a GET request to /sensors returns a 200 status code with a list of all truck sensor readings from Firebase, and handles cases where data source is unavailable or malformed."
+  },
+  {
+    "id": "TC003",
+    "title": "get_all_shipments_with_status",
+    "description": "Verify that a GET request to /shipments returns a 200 status code with shipment records and current statuses, and properly handles missing or inaccessible Firebase data."
+  },
+  {
+    "id": "TC004",
+    "title": "post_trigger_breach_with_valid_data",
+    "description": "Verify that a POST request to /trigger-breach with a valid truck_id and temperature above threshold returns a 200 status with AgentPipelineTrace, updates breach status, and writes containment actions to Firebase."
+  },
+  {
+    "id": "TC005",
+    "title": "post_trigger_breach_with_unknown_truck",
+    "description": "Verify that a POST request to /trigger-breach with a truck_id not found in Firebase returns a 404 Truck not found error and does not execute the containment pipeline."
+  },
+  {
+    "id": "TC006",
+    "title": "post_trigger_breach_with_database_failure",
+    "description": "Verify that a POST request to /trigger-breach with valid truck_id but database update failure returns a 500 Database update failed error and does not fully write the incident to Firebase."
+  },
+  {
+    "id": "TC007",
+    "title": "post_trigger_breach_with_temperature_below_threshold",
+    "description": "Verify that a POST request to /trigger-breach with temperature below threshold returns a 200 response indicating no active breach and halts the orchestrator after assessment."
+  },
+  {
+    "id": "TC008",
+    "title": "post_analyze_unstructured_with_valid_report",
+    "description": "Verify that a POST request to /analyze-unstructured with driver report text containing truck identifier and temperature returns a 200 response with extracted fields and triggers breach response pipeline."
+  },
+  {
+    "id": "TC009",
+    "title": "post_analyze_unstructured_with_ambiguous_temperature",
+    "description": "Verify that a POST request to /analyze-unstructured with ambiguous or incomplete temperature text returns a 200 response with best-effort extraction and reflects parsing uncertainty, possibly not triggering a breach."
+  },
+  {
+    "id": "TC010",
+    "title": "post_analyze_unstructured_with_invalid_or_unknown_truck",
+    "description": "Verify that a POST request to /analyze-unstructured with empty, invalid content or unknown truck_id returns appropriate error or analysis result, and handles downstream breach response failure gracefully."
+  }
+]
